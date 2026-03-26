@@ -4,26 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menu - مطعمك</title>
+
+<!-- رابط خط Cairo من Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+
 <style>
-body { font-family:'Cairo',sans-serif; margin:0; background:#f5f6fa; direction:rtl; }
+/* ==== ستايل عام ==== */
+body, input, select, textarea, button {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+body { margin:0; background:#f5f6fa; direction:rtl; }
 header { background:#111; color:white; display:flex; justify-content:space-between; align-items:center; padding:10px; }
 header img { width:50px; border-radius:5px; }
-h2 { margin:0; }
+h2, h3, h4, p { margin:0; }
 nav { background:#ff6b00; text-align:center; padding:10px; }
 nav button { background:none; border:none; color:white; margin:5px; font-weight:bold; cursor:pointer; font-size:16px; }
+
 #menu { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:15px; padding:10px; margin-top:10px; }
+
 .item { background:white; padding:10px; border-radius:12px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.3s; }
 .item:hover { transform:translateY(-3px); box-shadow:0 5px 10px rgba(0,0,0,0.15); }
 .item img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:10px; }
-.note { font-size:12px; color:#555; margin-top:3px; }
+
+.note { font-size:12px; color:#555; margin-top:3px; } /* ملاحظات المنتج */
 </style>
 </head>
+
 <body>
 
 <header>
   <img id="logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Logo">
   <h2 id="restaurantName">مطعمك</h2>
-  <button onclick="adminLogin()">🔒</button>
+  <button onclick="adminLogin()">🔒</button> <!-- زر الدخول للادمن -->
 </header>
 
 <nav id="nav"></nav>
@@ -34,7 +47,7 @@ nav button { background:none; border:none; color:white; margin:5px; font-weight:
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// 🔥 إعداد Firebase
+// ================= إعداد Firebase =================
 const firebaseConfig = {
   apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
   authDomain: "menu-abu-flan.firebaseapp.com",
@@ -44,13 +57,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// بيانات
-let categories = [];
-let products = [];
-let restaurantName = "";
-let logoUrl = "";
+// ================= المتغيرات =================
+let categories = []; // قائمة الأصناف
+let products = [];   // المنتجات
+let restaurantName = ""; // اسم المطعم
+let logoUrl = "";        // رابط الشعار
 
-// تحميل البيانات من Firebase
+// ================= تحميل البيانات =================
 function loadData(){
   db.ref("menu").on("value", (snapshot)=>{
     let data = snapshot.val();
@@ -59,15 +72,16 @@ function loadData(){
       products = data.products || [];
       restaurantName = data.restaurantName || "مطعمك";
       logoUrl = data.logo || "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
-      renderNav();
-      showCategory(categories[0]);
+
+      renderNav(); // عرض قوائم الأصناف
+      showCategory(categories[0]); // عرض أول صنف
       document.getElementById('restaurantName').innerText = restaurantName;
       document.getElementById('logo').src = logoUrl;
     }
   });
 }
 
-// عرض الأصناف
+// ================= عرض الأصناف =================
 function renderNav(){
   let navHtml = "";
   categories.forEach(c => {
@@ -76,7 +90,7 @@ function renderNav(){
   document.getElementById('nav').innerHTML = navHtml;
 }
 
-// عرض المنتجات حسب الصنف
+// ================= عرض المنتجات حسب الصنف =================
 function showCategory(cat){
   let html = "";
   products.filter(p => p.category===cat).forEach(p => {
@@ -84,13 +98,13 @@ function showCategory(cat){
       <img src="${p.image}">
       <h4>${p.name}</h4>
       <p>${p.price.toLocaleString()} د.ع</p>
-      ${p.note?`<div class="note">${p.note}</div>`:""}
+      ${p.note?`<div class="note">${p.note}</div>`:""} <!-- ملاحظة المنتج -->
     </div>`;
   });
   document.getElementById('menu').innerHTML = html;
 }
 
-// دخول الأدمن
+// ================= دخول الأدمن =================
 function adminLogin(){
   let pass = prompt("ادخل كلمة سر الأدمن");
   if(pass==="1973"){
@@ -100,6 +114,7 @@ function adminLogin(){
   }
 }
 
+// ================= تشغيل =================
 loadData();
 </script>
 
