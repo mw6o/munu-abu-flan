@@ -4,8 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
+
+<!-- خط Cairo -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+
 <style>
-body { font-family:'Cairo',sans-serif; margin:0; background:#f5f6fa; direction:rtl; padding:20px; }
+body, input, select, textarea, button {
+  font-family: 'Cairo', sans-serif !important;
+}
+body { margin:0; background:#f5f6fa; direction:rtl; padding:20px; }
 h2,h3 { text-align:center; }
 input,select,textarea,button { width:100%; margin:5px 0; padding:8px; border-radius:5px; border:1px solid #ccc; }
 button { background:#ff6b00; color:white; border:none; cursor:pointer; }
@@ -18,11 +25,13 @@ button:hover { background:#e55b00; }
 
 <h2>لوحة الإدارة</h2>
 
+<!-- تعديل اسم المطعم والشعار -->
 <h3>تعديل اسم المطعم وشعاره</h3>
 <input id="restaurantNameInput" placeholder="اسم المطعم">
 <input id="logoInput" placeholder="رابط الشعار">
 <button onclick="updateRestaurant()">تحديث</button>
 
+<!-- الأصناف -->
 <h3>إضافة صنف</h3>
 <input id="catName" placeholder="اسم الصنف">
 <button onclick="addCategory()">إضافة صنف</button>
@@ -30,10 +39,11 @@ button:hover { background:#e55b00; }
 <h3>الأصناف الحالية</h3>
 <div id="categoryList"></div>
 
+<!-- المنتجات -->
 <h3>إضافة منتج</h3>
 <input id="name" placeholder="اسم المنتج">
 <input id="price" placeholder="السعر">
-<textarea id="note" placeholder="ملاحظات"></textarea>
+<textarea id="note" placeholder="ملاحظات لكل منتج"></textarea>
 <input id="imageFile" type="file" accept="image/*">
 <select id="category"></select>
 <button onclick="addProduct()">إضافة منتج</button>
@@ -41,11 +51,12 @@ button:hover { background:#e55b00; }
 <h3>المنتجات الحالية</h3>
 <div id="productList"></div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase
+// ================= إعداد Firebase =================
 const firebaseConfig = {
   apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
   authDomain: "menu-abu-flan.firebaseapp.com",
@@ -55,13 +66,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// البيانات
+// ================= المتغيرات =================
 let categories = [];
 let products = [];
 let restaurantName = "";
 let logoUrl = "";
 
-// تحميل البيانات
+// ================= تحميل البيانات =================
 function loadData(){
   db.ref("menu").on("value",(snapshot)=>{
     let data = snapshot.val();
@@ -70,16 +81,17 @@ function loadData(){
       products = data.products || [];
       restaurantName = data.restaurantName || "مطعمك";
       logoUrl = data.logo || "";
-      renderCategories();
-      renderCategoryList();
-      renderProducts();
+
+      renderCategories();      // تحديث قائمة الخيارات
+      renderCategoryList();    // عرض الأصناف
+      renderProducts();        // عرض المنتجات
       document.getElementById('restaurantNameInput').value = restaurantName;
       document.getElementById('logoInput').value = logoUrl;
     }
   });
 }
 
-// حفظ البيانات
+// ================= حفظ البيانات =================
 function saveData(){
   db.ref("menu").set({
     categories: categories,
@@ -89,7 +101,7 @@ function saveData(){
   });
 }
 
-// تحديث اسم المطعم والشعار
+// ================= تحديث اسم المطعم والشعار =================
 function updateRestaurant(){
   let name = document.getElementById('restaurantNameInput').value.trim();
   let logo = document.getElementById('logoInput').value.trim();
@@ -99,7 +111,7 @@ function updateRestaurant(){
   alert("تم التحديث ✅");
 }
 
-// الأصناف
+// ================= إدارة الأصناف =================
 function renderCategories(){
   let select=document.getElementById('category'); 
   select.innerHTML="";
@@ -132,12 +144,13 @@ function deleteCategory(i){
   if(confirm("حذف الصنف؟")){ categories.splice(i,1); saveData(); }
 }
 
-// المنتجات
+// ================= إدارة المنتجات =================
 function renderProducts(){
   let html="";
   products.forEach((p,i)=>{
     html+=`<div class="item">
       <span>${p.name} - ${p.price.toLocaleString()}</span>
+      ${p.note?`<div class="note">${p.note}</div>`:""} <!-- عرض الملاحظة -->
       <img src="${p.image}">
       <div>
         <button onclick="editProduct(${i})">✏️</button>
@@ -147,18 +160,23 @@ function renderProducts(){
   });
   document.getElementById('productList').innerHTML=html;
 }
-
 function addProduct(){
   let name=document.getElementById('name').value.trim();
   let price=document.getElementById('price').value;
   let category=document.getElementById('category').value;
-  let note=document.getElementById('note').value.trim();
+  let note=document.getElementById('note').value.trim(); // ملاحظة المنتج
   let file=document.getElementById('imageFile').files[0];
   if(!name || price==="" || isNaN(price) || !file){ alert("تحقق من البيانات"); return; }
 
   let reader=new FileReader();
   reader.onload=function(e){
-    products.push({name:name, price:parseInt(price), category:category, note:note, image:e.target.result});
+    products.push({
+      name:name,
+      price:parseInt(price),
+      category:category,
+      note:note,
+      image:e.target.result
+    });
     saveData();
     document.getElementById('name').value="";
     document.getElementById('price').value="";
@@ -167,17 +185,22 @@ function addProduct(){
   };
   reader.readAsDataURL(file);
 }
-
 function editProduct(i){
   let newName=prompt("اسم",products[i].name);
   let newPrice=prompt("سعر",products[i].price);
-  if(newName && newPrice){ products[i].name=newName; products[i].price=parseInt(newPrice); saveData(); }
+  let newNote=prompt("ملاحظة", products[i].note);
+  if(newName && newPrice){ 
+    products[i].name=newName; 
+    products[i].price=parseInt(newPrice); 
+    products[i].note = newNote;
+    saveData(); 
+  }
 }
 function deleteProduct(i){
   if(confirm("حذف؟")){ products.splice(i,1); saveData(); }
 }
 
-// تشغيل
+// ================= تشغيل =================
 loadData();
 </script>
 </body>
