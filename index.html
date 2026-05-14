@@ -1,126 +1,517 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Menu - مطعمك</title>
-
-<!-- رابط خط Cairo من Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
-
-<style>
-/* ==== ستايل عام ==== */
-body, input, select, textarea, button {
-  font-family: 'Cairo', sans-serif !important;
-}
-
-body { margin:0; background:#f5f6fa; direction:rtl; }
-header { background:#111; color:white; display:flex; justify-content:space-between; align-items:center; padding:10px; }
-header img { width:50px; border-radius:5px; }
-h2, h3, h4, p { margin:0; }
-nav { background:#ff6b00; text-align:center; padding:10px; }
-nav button { background:none; border:none; color:white; margin:5px; font-weight:bold; cursor:pointer; font-size:16px; }
-
-#menu { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:15px; padding:10px; margin-top:10px; }
-
-.item { background:white; padding:10px; border-radius:12px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.3s; }
-.item:hover { transform:translateY(-3px); box-shadow:0 5px 10px rgba(0,0,0,0.15); }
-.item img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:10px; }
-
-.note { font-size:12px; color:#555; margin-top:3px; } /* ملاحظات المنتج */
-</style>
-</head>
-
-<body>
-
-<header>
-  <img id="logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Logo">
-  <h2 id="restaurantName">مطعمك</h2>
-  <button onclick="adminLogin()">🔒</button> <!-- زر الدخول للادمن -->
-</header>
-
-<nav id="nav"></nav>
-<div id="menu"></div>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<script>
-// ================= إعداد Firebase =================
-const firebaseConfig = {
-  apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
-  authDomain: "menu-abu-flan.firebaseapp.com",
-  databaseURL: "https://menu-abu-flan-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "menu-abu-flan",
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// ================= المتغيرات =================
-let categories = []; // قائمة الأصناف
-let products = [];   // المنتجات
-let restaurantName = ""; // اسم المطعم
-let logoUrl = "";        // رابط الشعار
-
-// ================= تحميل البيانات =================
-function loadData(){
-  db.ref("menu").on("value", (snapshot)=>{
-    let data = snapshot.val();
-    if(data){
-      categories = data.categories || [];
-      products = data.products || [];
-      restaurantName = data.restaurantName || "مطعمك";
-      logoUrl = data.logo || "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
-
-      renderNav(); // عرض قوائم الأصناف
-      showCategory(categories[0]); // عرض أول صنف
-      document.getElementById('restaurantName').innerText = restaurantName;
-      document.getElementById('logo').src = logoUrl;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>قائمة الطعام - مطعمك</title>
+  
+  <!-- خط النظام مع خط عربي أنيق -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ======================== نظام الألوان ======================== */
+    :root {
+      /* الألوان الأساسية - تقدر تغيرها من لوحة تحكم الأدمن */
+      --primary: #007AFF;
+      --primary-light: #E8F2FF;
+      --primary-dark: #0056B3;
+      
+      /* ألوان الخلفيات */
+      --bg-main: #F2F2F7;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --bg-header: rgba(255, 255, 255, 0.8);
+      --bg-nav: rgba(255, 255, 255, 0.7);
+      
+      /* ألوان النصوص */
+      --text-primary: #1C1C1E;
+      --text-secondary: #8E8E93;
+      --text-price: #007AFF;
+      
+      /* الظلال والتأثيرات */
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+      
+      /* التمويه الزجاجي */
+      --blur-header: 20px;
+      --blur-nav: 15px;
+      --blur-card: 12px;
+      
+      /* الحدود */
+      --border-light: rgba(255, 255, 255, 0.6);
+      --border-medium: rgba(255, 255, 255, 0.4);
+      
+      /* التدوير */
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --radius-full: 100px;
     }
-  });
-}
 
-// ================= عرض الأصناف =================
-function renderNav(){
-  let navHtml = "";
-  categories.forEach(c => {
-    navHtml += `<button onclick="showCategory('${c}')">${c}</button>`;
-  });
-  document.getElementById('nav').innerHTML = navHtml;
-}
+    /* ======================== إعادة التعيين ======================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-// ================= عرض المنتجات حسب الصنف =================
-function showCategory(cat){
-  let html = "";
-  products.filter(p => p.category===cat).forEach(p => {
-    html += `<div class="item">
-      <img src="${p.image}">
-      <h4>${p.name}</h4>
-      <p>${p.price.toLocaleString()} د.ع</p>
-      ${p.note?`<div class="note">${p.note}</div>`:""} <!-- ملاحظة المنتج -->
-    </div>`;
-  });
-  document.getElementById('menu').innerHTML = html;
-}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Cairo', 'SF Pro Display', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      direction: rtl;
+      min-height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+    }
 
-// ================= دخول الأدمن =================
-function adminLogin(){
-  let pass = prompt("ادخل كلمة سر الأدمن");
-  if(pass==="1973"){
-    window.location.href="admin.html";
-  } else {
-    alert("كلمة سر خاطئة ❌");
-  }
-}
+    /* خلفية متدرجة محاكية لنمط آبل */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(0, 122, 255, 0.05), transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(0, 122, 255, 0.03), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-// ================= تشغيل =================
-loadData();
-</script>
+    /* ======================== الحاوية الرئيسية ======================== */
+    .app-container {
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+      z-index: 1;
+    }
 
-<footer style="background:#111;color:#ff6b00;text-align:center;padding:10px;font-size:10px;font-weight:bold;width:100%;">
-تم برمجة هذا الموقع بواسطة فريق STS العراقي
-</footer>
+    /* ======================== الهيدر الزجاجي ======================== */
+    .header {
+      background: var(--bg-header);
+      backdrop-filter: blur(var(--blur-header)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur-header)) saturate(180%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      position: sticky;
+      top: 16px;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
 
+    .logo-container {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      background: white;
+    }
+
+    .logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .restaurant-info {
+      flex: 1;
+      text-align: center;
+    }
+
+    .restaurant-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .admin-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+
+    .admin-button:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .admin-button:active {
+      transform: scale(0.95);
+    }
+
+    /* ======================== شريط التصنيفات ======================== */
+    .categories-nav {
+      background: var(--bg-nav);
+      backdrop-filter: blur(var(--blur-nav)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur-nav)) saturate(180%);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      padding: 8px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 120px;
+      z-index: 99;
+    }
+
+    .category-btn {
+      background: transparent;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .category-btn:hover {
+      color: var(--text-primary);
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .category-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    /* ======================== شبكة المنتجات ======================== */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      padding-bottom: 20px;
+    }
+
+    .product-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--blur-card)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur-card)) saturate(180%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-medium);
+      box-shadow: var(--shadow-sm);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+      pointer-events: none;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      position: relative;
+      z-index: 1;
+    }
+
+    .product-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .product-price {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+      letter-spacing: -0.3px;
+    }
+
+    .product-note {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ======================== رسالة المنتجات الفارغة ======================== */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    /* ======================== الفوتر ======================== */
+    .footer {
+      margin-top: 20px;
+      padding: 16px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      border: 1px solid var(--border-light);
+      border-bottom: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* ======================== تحسينات للأجهزة المحمولة ======================== */
+    @media (max-width: 400px) {
+      .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      
+      .restaurant-name {
+        font-size: 1.3rem;
+      }
+      
+      .header {
+        padding: 12px 16px;
+      }
+    }
+
+    /* ======================== أنيميشن ظهور المنتجات ======================== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .product-card {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- الهيدر -->
+    <header class="header">
+      <div class="logo-container">
+        <img id="logo" class="logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="شعار المطعم">
+      </div>
+      <div class="restaurant-info">
+        <h1 id="restaurantName" class="restaurant-name">مطعمك</h1>
+      </div>
+      <button class="admin-button" onclick="adminLogin()" title="تسجيل دخول الأدمن">🔒</button>
+    </header>
+
+    <!-- شريط التصنيفات -->
+    <nav id="nav" class="categories-nav"></nav>
+
+    <!-- شبكة المنتجات -->
+    <div id="menu" class="products-grid"></div>
+  </div>
+
+  <!-- الفوتر -->
+  <footer class="footer">
+    تم برمجة هذا الموقع بواسطة فريق STS العراقي
+  </footer>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ==================== إعداد Firebase ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
+      authDomain: "menu-abu-flan.firebaseapp.com",
+      databaseURL: "https://menu-abu-flan-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "menu-abu-flan",
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ==================== المتغيرات العامة ====================
+    let categories = [];
+    let products = [];
+    let restaurantName = "مطعمك";
+    let logoUrl = "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+
+    // ==================== تطبيق الثيم من Firebase ====================
+    function applyTheme(theme) {
+      if (!theme) return;
+      
+      const root = document.documentElement;
+      
+      // تطبيق الألوان الأساسية
+      if (theme.primary) {
+        root.style.setProperty('--primary', theme.primary);
+        root.style.setProperty('--text-price', theme.primary);
+        
+        // استخراج RGB من HEX
+        const hex = theme.primary.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        root.style.setProperty('--primary-light', `rgba(${r}, ${g}, ${b}, 0.12)`);
+      }
+      
+      if (theme.bg) root.style.setProperty('--bg-main', theme.bg);
+      if (theme.cardBg) root.style.setProperty('--bg-card', theme.cardBg);
+      if (theme.text) root.style.setProperty('--text-primary', theme.text);
+      if (theme.textSecondary) root.style.setProperty('--text-secondary', theme.textSecondary);
+      if (theme.navBg) root.style.setProperty('--bg-nav', theme.navBg);
+      if (theme.headerBg) root.style.setProperty('--bg-header', theme.headerBg);
+    }
+
+    // ==================== تحميل البيانات من Firebase ====================
+    function loadData() {
+      db.ref("menu").on("value", (snapshot) => {
+        const data = snapshot.val();
+        
+        if (data) {
+          // تحميل البيانات الأساسية
+          categories = data.categories || [];
+          products = data.products || [];
+          restaurantName = data.restaurantName || "مطعمك";
+          logoUrl = data.logo || "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+
+          // تطبيق الثيم
+          if (data.theme) {
+            applyTheme(data.theme);
+          }
+
+          // تحديث الواجهة
+          document.getElementById('restaurantName').textContent = restaurantName;
+          document.getElementById('logo').src = logoUrl;
+
+          // عرض التصنيفات والمنتجات
+          renderCategories();
+          
+          if (categories.length > 0) {
+            showCategory(categories[0]);
+          }
+        }
+      });
+    }
+
+    // ==================== عرض التصنيفات ====================
+    function renderCategories() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = categories.map(cat => 
+        `<button class="category-btn" data-category="${cat}" onclick="showCategory('${cat}')">${cat}</button>`
+      ).join('');
+    }
+
+    // ==================== عرض المنتجات حسب التصنيف ====================
+    function showCategory(category) {
+      // تحديث الزر النشط
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category);
+      });
+
+      // فلترة وعرض المنتجات
+      const filteredProducts = products.filter(p => p.category === category);
+      const menu = document.getElementById('menu');
+
+      if (filteredProducts.length === 0) {
+        menu.innerHTML = '<div class="empty-state">لا توجد منتجات في هذا التصنيف 🍽️</div>';
+        return;
+      }
+
+      menu.innerHTML = filteredProducts.map(p => `
+        <div class="product-card">
+          <img class="product-image" src="${p.image}" alt="${p.name}" loading="lazy">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">${p.price.toLocaleString()} د.ع</div>
+          ${p.note ? `<div class="product-note">${p.note}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // ==================== دخول الأدمن ====================
+    function adminLogin() {
+      const password = prompt("🔐 الرجاء إدخال كلمة سر الأدمن");
+      
+      if (password === null) return; // ضغط إلغاء
+      
+      if (password === "1973") {
+        window.location.href = "admin.html";
+      } else {
+        alert("❌ كلمة السر غير صحيحة");
+      }
+    }
+
+    // ==================== بدء التطبيق ====================
+    loadData();
+  </script>
 </body>
 </html>
