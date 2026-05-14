@@ -3,52 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>قائمة الطعام - مطعمك</title>
+  <title>قائمة الطعام</title>
   
-  <!-- خط النظام مع خط عربي أنيق -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
-    /* ======================== نظام الألوان ======================== */
+    /* ==================== نظام الألوان ==================== */
     :root {
-      /* الألوان الأساسية - تقدر تغيرها من لوحة تحكم الأدمن */
       --primary: #007AFF;
-      --primary-light: #E8F2FF;
+      --primary-rgb: 0, 122, 255;
+      --primary-light: rgba(0, 122, 255, 0.12);
       --primary-dark: #0056B3;
-      
-      /* ألوان الخلفيات */
       --bg-main: #F2F2F7;
       --bg-card: rgba(255, 255, 255, 0.75);
       --bg-header: rgba(255, 255, 255, 0.8);
       --bg-nav: rgba(255, 255, 255, 0.7);
-      
-      /* ألوان النصوص */
       --text-primary: #1C1C1E;
       --text-secondary: #8E8E93;
       --text-price: #007AFF;
-      
-      /* الظلال والتأثيرات */
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
       --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
       --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
-      
-      /* التمويه الزجاجي */
-      --blur-header: 20px;
-      --blur-nav: 15px;
-      --blur-card: 12px;
-      
-      /* الحدود */
       --border-light: rgba(255, 255, 255, 0.6);
       --border-medium: rgba(255, 255, 255, 0.4);
-      
-      /* التدوير */
       --radius-sm: 12px;
       --radius-md: 20px;
       --radius-lg: 28px;
       --radius-full: 100px;
+      --blur-header: 20px;
+      --blur-nav: 15px;
+      --blur-card: 12px;
+      --banner-height: 180px;
     }
 
-    /* ======================== إعادة التعيين ======================== */
     * {
       margin: 0;
       padding: 0;
@@ -61,40 +48,152 @@
       color: var(--text-primary);
       direction: rtl;
       min-height: 100vh;
-      padding: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       position: relative;
+      padding-bottom: 30px;
     }
 
-    /* خلفية متدرجة محاكية لنمط آبل */
+    /* خلفية متدرجة */
     body::before {
       content: '';
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background: 
-        radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.08), transparent 50%),
-        radial-gradient(circle at 80% 60%, rgba(0, 122, 255, 0.05), transparent 50%),
-        radial-gradient(circle at 50% 80%, rgba(0, 122, 255, 0.03), transparent 50%);
+        radial-gradient(circle at 20% 20%, rgba(var(--primary-rgb), 0.08), transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(var(--primary-rgb), 0.05), transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(var(--primary-rgb), 0.03), transparent 50%);
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ======================== الحاوية الرئيسية ======================== */
     .app-container {
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       position: relative;
       z-index: 1;
+      padding: 16px;
     }
 
-    /* ======================== الهيدر الزجاجي ======================== */
+    /* ==================== البنر المتحرك ==================== */
+    .banner-container {
+      width: 100%;
+      height: var(--banner-height);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .banner-slider {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .banner-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .banner-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .banner-overlay h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .banner-overlay p {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .banner-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 3;
+    }
+
+    .banner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .banner-dot.active {
+      background: white;
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .banner-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.8);
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.3s;
+      color: #1C1C1E;
+    }
+
+    .banner-arrow:hover {
+      background: white;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .banner-arrow.prev { left: 10px; }
+    .banner-arrow.next { right: 10px; }
+
+    /* ==================== الهيدر ==================== */
     .header {
       background: var(--bg-header);
       backdrop-filter: blur(var(--blur-header)) saturate(180%);
@@ -102,7 +201,7 @@
       border-radius: var(--radius-lg);
       border: 1px solid var(--border-light);
       box-shadow: var(--shadow-md);
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -111,12 +210,11 @@
       position: sticky;
       top: 16px;
       z-index: 100;
-      transition: all 0.3s ease;
     }
 
     .logo-container {
-      width: 48px;
-      height: 48px;
+      width: 46px;
+      height: 46px;
       border-radius: var(--radius-sm);
       overflow: hidden;
       box-shadow: var(--shadow-sm);
@@ -136,23 +234,22 @@
     }
 
     .restaurant-name {
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.4rem;
+      font-weight: 800;
       color: var(--text-primary);
       letter-spacing: -0.5px;
-      line-height: 1.2;
     }
 
     .admin-button {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: 1px solid var(--border-light);
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -171,7 +268,7 @@
       transform: scale(0.95);
     }
 
-    /* ======================== شريط التصنيفات ======================== */
+    /* ==================== شريط التصنيفات ==================== */
     .categories-nav {
       background: var(--bg-nav);
       backdrop-filter: blur(var(--blur-nav)) saturate(180%);
@@ -179,21 +276,21 @@
       border-radius: var(--radius-md);
       border: 1px solid var(--border-light);
       box-shadow: var(--shadow-sm);
-      padding: 8px 10px;
+      padding: 6px 8px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       justify-content: center;
       margin-bottom: 20px;
       position: sticky;
-      top: 120px;
+      top: 115px;
       z-index: 99;
     }
 
     .category-btn {
       background: transparent;
       border: none;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: var(--radius-full);
       font-family: inherit;
       font-size: 0.9rem;
@@ -202,7 +299,6 @@
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
       white-space: nowrap;
-      position: relative;
     }
 
     .category-btn:hover {
@@ -213,16 +309,15 @@
     .category-btn.active {
       background: var(--primary);
       color: white;
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
       transform: scale(1.05);
     }
 
-    /* ======================== شبكة المنتجات ======================== */
+    /* ==================== شبكة المنتجات ==================== */
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-      padding-bottom: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 14px;
     }
 
     .product-card {
@@ -232,23 +327,22 @@
       border-radius: var(--radius-lg);
       border: 1px solid var(--border-medium);
       box-shadow: var(--shadow-sm);
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
       cursor: default;
       position: relative;
       overflow: hidden;
+      animation: fadeInUp 0.5s ease forwards;
     }
 
     .product-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 50%;
       background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
       pointer-events: none;
@@ -273,7 +367,7 @@
     }
 
     .product-name {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-primary);
       text-align: center;
@@ -281,33 +375,33 @@
     }
 
     .product-price {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: var(--primary);
       background: var(--primary-light);
-      padding: 4px 14px;
+      padding: 3px 12px;
       border-radius: var(--radius-full);
-      letter-spacing: -0.3px;
     }
 
     .product-note {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-secondary);
       font-weight: 500;
       text-align: center;
       line-height: 1.4;
     }
 
-    /* ======================== رسالة المنتجات الفارغة ======================== */
+    /* ==================== رسالة فارغة ==================== */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
       color: var(--text-secondary);
       font-size: 1.1rem;
       font-weight: 500;
+      grid-column: 1 / -1;
     }
 
-    /* ======================== الفوتر ======================== */
+    /* ==================== الفوتر ==================== */
     .footer {
       margin-top: 20px;
       padding: 16px;
@@ -318,48 +412,40 @@
       border-radius: var(--radius-md) var(--radius-md) 0 0;
       border: 1px solid var(--border-light);
       border-bottom: none;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--text-secondary);
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
     }
 
-    /* ======================== تحسينات للأجهزة المحمولة ======================== */
+    /* ==================== أنيميشن ==================== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     @media (max-width: 400px) {
       .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+        gap: 10px;
       }
-      
-      .restaurant-name {
-        font-size: 1.3rem;
-      }
-      
-      .header {
-        padding: 12px 16px;
-      }
-    }
-
-    /* ======================== أنيميشن ظهور المنتجات ======================== */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .product-card {
-      animation: fadeInUp 0.5s ease forwards;
+      .restaurant-name { font-size: 1.2rem; }
+      :root { --banner-height: 140px; }
     }
   </style>
 </head>
 <body>
   <div class="app-container">
+    
+    <!-- البنر المتحرك -->
+    <div class="banner-container" id="bannerContainer">
+      <div class="banner-slider" id="bannerSlider"></div>
+      <button class="banner-arrow prev" onclick="changeBanner(-1)">‹</button>
+      <button class="banner-arrow next" onclick="changeBanner(1)">›</button>
+      <div class="banner-dots" id="bannerDots"></div>
+    </div>
+
     <!-- الهيدر -->
     <header class="header">
       <div class="logo-container">
@@ -399,31 +485,30 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ==================== المتغيرات العامة ====================
+    // ==================== المتغيرات ====================
     let categories = [];
     let products = [];
     let restaurantName = "مطعمك";
     let logoUrl = "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+    let banners = [];
+    let currentBannerIndex = 0;
+    let bannerInterval;
 
-    // ==================== تطبيق الثيم من Firebase ====================
+    // ==================== تطبيق الثيم ====================
     function applyTheme(theme) {
       if (!theme) return;
-      
       const root = document.documentElement;
       
-      // تطبيق الألوان الأساسية
       if (theme.primary) {
         root.style.setProperty('--primary', theme.primary);
         root.style.setProperty('--text-price', theme.primary);
-        
-        // استخراج RGB من HEX
         const hex = theme.primary.replace('#', '');
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
+        root.style.setProperty('--primary-rgb', `${r}, ${g}, ${b}`);
         root.style.setProperty('--primary-light', `rgba(${r}, ${g}, ${b}, 0.12)`);
       }
-      
       if (theme.bg) root.style.setProperty('--bg-main', theme.bg);
       if (theme.cardBg) root.style.setProperty('--bg-card', theme.cardBg);
       if (theme.text) root.style.setProperty('--text-primary', theme.text);
@@ -432,29 +517,24 @@
       if (theme.headerBg) root.style.setProperty('--bg-header', theme.headerBg);
     }
 
-    // ==================== تحميل البيانات من Firebase ====================
+    // ==================== تحميل البيانات ====================
     function loadData() {
       db.ref("menu").on("value", (snapshot) => {
         const data = snapshot.val();
-        
         if (data) {
-          // تحميل البيانات الأساسية
           categories = data.categories || [];
           products = data.products || [];
           restaurantName = data.restaurantName || "مطعمك";
           logoUrl = data.logo || "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+          banners = data.banners || [];
 
-          // تطبيق الثيم
-          if (data.theme) {
-            applyTheme(data.theme);
-          }
+          if (data.theme) applyTheme(data.theme);
 
-          // تحديث الواجهة
           document.getElementById('restaurantName').textContent = restaurantName;
           document.getElementById('logo').src = logoUrl;
 
-          // عرض التصنيفات والمنتجات
           renderCategories();
+          renderBanners();
           
           if (categories.length > 0) {
             showCategory(categories[0]);
@@ -463,7 +543,73 @@
       });
     }
 
-    // ==================== عرض التصنيفات ====================
+    // ==================== البنرات ====================
+    function renderBanners() {
+      const slider = document.getElementById('bannerSlider');
+      const dotsContainer = document.getElementById('bannerDots');
+      const container = document.getElementById('bannerContainer');
+
+      if (!banners || banners.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      slider.innerHTML = banners.map(b => `
+        <div class="banner-slide">
+          <img src="${b.image}" alt="${b.title || ''}" onerror="this.style.display='none'">
+          ${b.title ? `<div class="banner-overlay"><h3>${b.title}</h3>${b.subtitle ? `<p>${b.subtitle}</p>` : ''}</div>` : ''}
+        </div>
+      `).join('');
+
+      dotsContainer.innerHTML = banners.map((_, i) => `
+        <div class="banner-dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></div>
+      `).join('');
+
+      currentBannerIndex = 0;
+      updateBannerPosition();
+      startBannerAutoPlay();
+    }
+
+    function updateBannerPosition() {
+      const slider = document.getElementById('bannerSlider');
+      slider.style.transform = `translateX(${currentBannerIndex * 100}%)`;
+      
+      document.querySelectorAll('.banner-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentBannerIndex);
+      });
+    }
+
+    function changeBanner(direction) {
+      if (!banners.length) return;
+      currentBannerIndex = (currentBannerIndex + direction + banners.length) % banners.length;
+      updateBannerPosition();
+      resetBannerAutoPlay();
+    }
+
+    function goToBanner(index) {
+      currentBannerIndex = index;
+      updateBannerPosition();
+      resetBannerAutoPlay();
+    }
+
+    function startBannerAutoPlay() {
+      stopBannerAutoPlay();
+      if (banners.length > 1) {
+        bannerInterval = setInterval(() => changeBanner(1), 4000);
+      }
+    }
+
+    function stopBannerAutoPlay() {
+      if (bannerInterval) clearInterval(bannerInterval);
+    }
+
+    function resetBannerAutoPlay() {
+      stopBannerAutoPlay();
+      startBannerAutoPlay();
+    }
+
+    // ==================== التصنيفات ====================
     function renderCategories() {
       const nav = document.getElementById('nav');
       nav.innerHTML = categories.map(cat => 
@@ -471,19 +617,16 @@
       ).join('');
     }
 
-    // ==================== عرض المنتجات حسب التصنيف ====================
     function showCategory(category) {
-      // تحديث الزر النشط
       document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.category === category);
       });
 
-      // فلترة وعرض المنتجات
       const filteredProducts = products.filter(p => p.category === category);
       const menu = document.getElementById('menu');
 
       if (filteredProducts.length === 0) {
-        menu.innerHTML = '<div class="empty-state">لا توجد منتجات في هذا التصنيف 🍽️</div>';
+        menu.innerHTML = '<div class="empty-state">🍽️ لا توجد منتجات في هذا التصنيف</div>';
         return;
       }
 
@@ -500,9 +643,7 @@
     // ==================== دخول الأدمن ====================
     function adminLogin() {
       const password = prompt("🔐 الرجاء إدخال كلمة سر الأدمن");
-      
-      if (password === null) return; // ضغط إلغاء
-      
+      if (password === null) return;
       if (password === "1973") {
         window.location.href = "admin.html";
       } else {
@@ -510,7 +651,7 @@
       }
     }
 
-    // ==================== بدء التطبيق ====================
+    // ==================== تشغيل ====================
     loadData();
   </script>
 </body>
