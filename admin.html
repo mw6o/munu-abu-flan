@@ -1,207 +1,880 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة التحكم - Admin Panel</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==================== نظام الألوان ==================== */
+    :root {
+      --bg-main: #F2F2F7;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --text-primary: #1C1C1E;
+      --text-secondary: #8E8E93;
+      --primary: #007AFF;
+      --primary-light: #E8F2FF;
+      --danger: #FF3B30;
+      --danger-light: #FFEEED;
+      --success: #34C759;
+      --warning: #FF9500;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
+      --border-light: rgba(255,255,255,0.6);
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --blur: 20px;
+    }
 
-<!-- خط Cairo -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<style>
-body, input, select, textarea, button {
-  font-family: 'Cairo', sans-serif !important;
-}
-body { margin:0; background:#f5f6fa; direction:rtl; padding:20px; }
-h2,h3 { text-align:center; }
-input,select,textarea,button { width:100%; margin:5px 0; padding:8px; border-radius:5px; border:1px solid #ccc; }
-button { background:#ff6b00; color:white; border:none; cursor:pointer; }
-button:hover { background:#e55b00; }
-.item { display:flex; justify-content:space-between; align-items:center; margin:5px 0; padding:5px; border-bottom:1px solid #ddd; }
-.item img { width:50px; height:50px; object-fit:cover; border-radius:5px; margin-left:5px; }
-</style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Cairo', 'SF Pro Display', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      direction: rtl;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: 
+        radial-gradient(circle at 30% 20%, rgba(0,122,255,0.08), transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(0,122,255,0.05), transparent 50%),
+        radial-gradient(circle at 50% 90%, rgba(0,122,255,0.03), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ==================== الهيدر ==================== */
+    .header {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow-md);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #007AFF, #5856D6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .header .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ==================== الكروت ==================== */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: rgba(255,255,255,0.8);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .icon-blue { background: #E8F2FF; }
+    .icon-green { background: #E5F9E8; }
+    .icon-orange { background: #FFF3E5; }
+    .icon-purple { background: #F0EBFF; }
+    .icon-red { background: #FFEEED; }
+
+    /* ==================== الحقول ==================== */
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.8);
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+      background: white;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* ==================== الأزرار ==================== */
+    .btn {
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25,0.1,0.25,1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: #007AFF;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background: #0066D6;
+      box-shadow: 0 6px 16px rgba(0,122,255,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: #FF3B30;
+      color: white;
+      box-shadow: 0 4px 12px rgba(255,59,48,0.2);
+    }
+
+    .btn-danger:hover {
+      background: #E0352B;
+    }
+
+    .btn-ghost {
+      background: rgba(0,0,0,0.04);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(0,0,0,0.08);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    .btn-xs {
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      border-radius: 6px;
+      min-width: 30px;
+    }
+
+    /* ==================== القوائم ==================== */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(255,255,255,0.5);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      gap: 10px;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .list-item:hover {
+      background: rgba(255,255,255,0.8);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .list-item img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .list-item .info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-item .name {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .list-item .detail {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .list-item .actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ==================== محدد الألوان ==================== */
+    .color-picker-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="color"] {
+      width: 44px;
+      height: 44px;
+      padding: 2px;
+      border-radius: 12px;
+      border: 2px solid rgba(0,0,0,0.1);
+      cursor: pointer;
+      background: white;
+    }
+
+    .color-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .color-preset {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .color-preset:hover {
+      transform: scale(1.15);
+    }
+
+    .color-preset.active {
+      border-color: #1C1C1E;
+      box-shadow: 0 0 0 3px rgba(0,122,255,0.3);
+    }
+
+    /* ==================== رفع الصورة ==================== */
+    .upload-area {
+      border: 2px dashed rgba(0,0,0,0.15);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.4);
+    }
+
+    .upload-area:hover {
+      border-color: #007AFF;
+      background: rgba(0,122,255,0.05);
+    }
+
+    .upload-area .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    .preview-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin: 10px auto;
+      display: block;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ==================== علامات التبويب ==================== */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.04);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      background: white;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ==================== متجاوب ==================== */
+    @media (max-width: 500px) {
+      body { padding: 10px; }
+      .card { padding: 16px; }
+      .header h1 { font-size: 1.4rem; }
+      .list-item { flex-wrap: wrap; }
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    
+    <!-- الهيدر -->
+    <div class="header">
+      <h1>🎛️ لوحة التحكم</h1>
+      <p class="subtitle">إدارة المطعم، المنتجات، والثيم</p>
+    </div>
 
-<h2>لوحة الإدارة</h2>
+    <!-- علامات التبويب -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('general')">⚙️ عام</button>
+      <button class="tab" onclick="switchTab('categories')">📂 الأصناف</button>
+      <button class="tab" onclick="switchTab('products')">🍽️ المنتجات</button>
+      <button class="tab" onclick="switchTab('theme')">🎨 الثيم</button>
+    </div>
 
-<!-- تعديل اسم المطعم والشعار -->
-<h3>تعديل اسم المطعم وشعاره</h3>
-<input id="restaurantNameInput" placeholder="اسم المطعم">
-<input id="logoInput" placeholder="رابط الشعار">
-<button onclick="updateRestaurant()">تحديث</button>
+    <!-- ========== تبويب الإعدادات العامة ========== -->
+    <div id="tab-general" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-blue">🏪</span> معلومات المطعم
+        </div>
+        <div class="input-group">
+          <label>اسم المطعم</label>
+          <input id="restaurantNameInput" placeholder="أدخل اسم المطعم">
+        </div>
+        <div class="input-group">
+          <label>شعار المطعم</label>
+          <div class="upload-area" onclick="document.getElementById('logoFileInput').click()">
+            <div class="upload-icon">🖼️</div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">اضغط لرفع الشعار</p>
+            <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)">
+          </div>
+          <img id="logoPreview" class="preview-logo" style="display:none;" alt="معاينة الشعار">
+        </div>
+        <button class="btn btn-primary" onclick="updateRestaurant()">💾 حفظ التغييرات</button>
+      </div>
+    </div>
 
-<!-- الأصناف -->
-<h3>إضافة صنف</h3>
-<input id="catName" placeholder="اسم الصنف">
-<button onclick="addCategory()">إضافة صنف</button>
+    <!-- ========== تبويب الأصناف ========== -->
+    <div id="tab-categories" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-green">➕</span> إضافة صنف جديد
+        </div>
+        <div class="input-group">
+          <label>اسم الصنف</label>
+          <input id="catName" placeholder="مثال: مشروبات، وجبات رئيسية...">
+        </div>
+        <button class="btn btn-primary" onclick="addCategory()">إضافة الصنف</button>
+      </div>
 
-<h3>الأصناف الحالية</h3>
-<div id="categoryList"></div>
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-purple">📋</span> الأصناف الحالية
+        </div>
+        <div id="categoryList"></div>
+      </div>
+    </div>
 
-<!-- المنتجات -->
-<h3>إضافة منتج</h3>
-<input id="name" placeholder="اسم المنتج">
-<input id="price" placeholder="السعر">
-<textarea id="note" placeholder="ملاحظات لكل منتج"></textarea>
-<input id="imageFile" type="file" accept="image/*">
-<select id="category"></select>
-<button onclick="addProduct()">إضافة منتج</button>
+    <!-- ========== تبويب المنتجات ========== -->
+    <div id="tab-products" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-orange">🍕</span> إضافة منتج جديد
+        </div>
+        <div class="input-group">
+          <label>اسم المنتج</label>
+          <input id="name" placeholder="أدخل اسم المنتج">
+        </div>
+        <div class="input-group">
+          <label>السعر (د.ع)</label>
+          <input id="price" type="number" placeholder="أدخل السعر">
+        </div>
+        <div class="input-group">
+          <label>التصنيف</label>
+          <select id="category"></select>
+        </div>
+        <div class="input-group">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="note" placeholder="ملاحظات إضافية عن المنتج..."></textarea>
+        </div>
+        <div class="input-group">
+          <label>صورة المنتج</label>
+          <div class="upload-area" onclick="document.getElementById('productImageInput').click()">
+            <div class="upload-icon">📸</div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">اضغط لرفع صورة المنتج</p>
+            <input type="file" id="productImageInput" accept="image/*" onchange="handleProductImagePreview(event)">
+          </div>
+          <img id="productImagePreview" class="preview-logo" style="display:none;" alt="معاينة المنتج">
+        </div>
+        <button class="btn btn-primary" onclick="addProduct()">إضافة المنتج</button>
+      </div>
 
-<h3>المنتجات الحالية</h3>
-<div id="productList"></div>
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-purple">📦</span> المنتجات الحالية
+        </div>
+        <div id="productList"></div>
+      </div>
+    </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- ========== تبويب الثيم ========== -->
+    <div id="tab-theme" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon icon-purple">🎨</span> تخصيص الألوان
+        </div>
+        
+        <div class="input-group">
+          <label>اللون الأساسي</label>
+          <div class="color-picker-group">
+            <input type="color" id="themePrimary" value="#007AFF" onchange="updateColorPresetSelection()">
+            <span style="font-size:0.8rem;color:var(--text-secondary);">اختر اللون الرئيسي للتطبيق</span>
+          </div>
+          <div class="color-presets" id="colorPresets">
+            <span class="color-preset active" style="background:#007AFF;" data-color="#007AFF" onclick="selectPreset('#007AFF')"></span>
+            <span class="color-preset" style="background:#FF6B00;" data-color="#FF6B00" onclick="selectPreset('#FF6B00')"></span>
+            <span class="color-preset" style="background:#34C759;" data-color="#34C759" onclick="selectPreset('#34C759')"></span>
+            <span class="color-preset" style="background:#FF3B30;" data-color="#FF3B30" onclick="selectPreset('#FF3B30')"></span>
+            <span class="color-preset" style="background:#5856D6;" data-color="#5856D6" onclick="selectPreset('#5856D6')"></span>
+            <span class="color-preset" style="background:#FF2D55;" data-color="#FF2D55" onclick="selectPreset('#FF2D55')"></span>
+            <span class="color-preset" style="background:#AF52DE;" data-color="#AF52DE" onclick="selectPreset('#AF52DE')"></span>
+            <span class="color-preset" style="background:#FF9500;" data-color="#FF9500" onclick="selectPreset('#FF9500')"></span>
+          </div>
+        </div>
 
-<script>
-// ================= إعداد Firebase =================
-const firebaseConfig = {
-  apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
-  authDomain: "menu-abu-flan.firebaseapp.com",
-  databaseURL: "https://menu-abu-flan-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "menu-abu-flan",
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+        <div class="input-group">
+          <label>لون الخلفية</label>
+          <input type="color" id="themeBg" value="#F2F2F7">
+        </div>
 
-// ================= المتغيرات =================
-let categories = [];
-let products = [];
-let restaurantName = "";
-let logoUrl = "";
+        <div class="input-group">
+          <label>لون النص الأساسي</label>
+          <input type="color" id="themeText" value="#1C1C1E">
+        </div>
 
-// ================= تحميل البيانات =================
-function loadData(){
-  db.ref("menu").on("value",(snapshot)=>{
-    let data = snapshot.val();
-    if(data){
-      categories = data.categories || [];
-      products = data.products || [];
-      restaurantName = data.restaurantName || "مطعمك";
-      logoUrl = data.logo || "";
+        <div class="input-group">
+          <label>لون النص الثانوي</label>
+          <input type="color" id="themeTextSecondary" value="#8E8E93">
+        </div>
 
-      renderCategories();      // تحديث قائمة الخيارات
-      renderCategoryList();    // عرض الأصناف
-      renderProducts();        // عرض المنتجات
-      document.getElementById('restaurantNameInput').value = restaurantName;
-      document.getElementById('logoInput').value = logoUrl;
+        <div class="input-group">
+          <label>لون خلفية البطاقات</label>
+          <input type="color" id="themeCardBg" value="#FFFFFF">
+        </div>
+
+        <button class="btn btn-primary" onclick="saveTheme()">💾 حفظ الثيم</button>
+        <button class="btn btn-ghost" style="margin-top:8px;width:100%;" onclick="resetTheme()">🔄 استعادة الألوان الافتراضية</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ==================== إعداد Firebase ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeAAbKRX1mfJQ-aWuM8pXjQX7xhBoQItM",
+      authDomain: "menu-abu-flan.firebaseapp.com",
+      databaseURL: "https://menu-abu-flan-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "menu-abu-flan",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ==================== المتغيرات ====================
+    let categories = [];
+    let products = [];
+    let restaurantName = "";
+    let logoUrl = "";
+    let theme = {};
+    let productImageData = null;
+    let logoImageData = null;
+
+    // ==================== تحميل البيانات ====================
+    function loadData() {
+      db.ref("menu").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          categories = data.categories || [];
+          products = data.products || [];
+          restaurantName = data.restaurantName || "";
+          logoUrl = data.logo || "";
+          theme = data.theme || {};
+
+          renderAll();
+          loadThemeToForm();
+        }
+      });
     }
-  });
-}
 
-// ================= حفظ البيانات =================
-function saveData(){
-  db.ref("menu").set({
-    categories: categories,
-    products: products,
-    restaurantName: restaurantName,
-    logo: logoUrl
-  });
-}
+    function renderAll() {
+      renderCategorySelect();
+      renderCategoryList();
+      renderProducts();
+      document.getElementById('restaurantNameInput').value = restaurantName;
+      
+      if (logoUrl) {
+        document.getElementById('logoPreview').src = logoUrl;
+        document.getElementById('logoPreview').style.display = 'block';
+      }
+    }
 
-// ================= تحديث اسم المطعم والشعار =================
-function updateRestaurant(){
-  let name = document.getElementById('restaurantNameInput').value.trim();
-  let logo = document.getElementById('logoInput').value.trim();
-  if(name) restaurantName = name;
-  if(logo) logoUrl = logo;
-  saveData();
-  alert("تم التحديث ✅");
-}
+    // ==================== حفظ البيانات ====================
+    function saveAllData() {
+      db.ref("menu").set({
+        categories: categories,
+        products: products,
+        restaurantName: restaurantName,
+        logo: logoUrl,
+        theme: theme
+      });
+    }
 
-// ================= إدارة الأصناف =================
-function renderCategories(){
-  let select=document.getElementById('category'); 
-  select.innerHTML="";
-  categories.forEach(c => select.innerHTML += `<option>${c}</option>`);
-}
-function renderCategoryList(){
-  let html="";
-  categories.forEach((c,i)=>{
-    html+=`<div class="item">
-      <span>${c}</span>
-      <div>
-        <button onclick="editCategory(${i})">✏️</button>
-        <button onclick="deleteCategory(${i})">❌</button>
-      </div>
-    </div>`;
-  });
-  document.getElementById('categoryList').innerHTML=html;
-}
-function addCategory(){
-  let name=document.getElementById('catName').value.trim();
-  if(!name){ alert("اكتب اسم الصنف"); return; }
-  categories.push(name); saveData();
-  document.getElementById('catName').value="";
-}
-function editCategory(i){
-  let newName=prompt("اسم جديد",categories[i]);
-  if(newName){ categories[i]=newName; saveData(); }
-}
-function deleteCategory(i){
-  if(confirm("حذف الصنف؟")){ categories.splice(i,1); saveData(); }
-}
+    // ==================== تبويب عام ====================
+    function updateRestaurant() {
+      restaurantName = document.getElementById('restaurantNameInput').value.trim();
+      
+      if (logoImageData) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          logoUrl = e.target.result;
+          saveAllData();
+          document.getElementById('logoPreview').src = logoUrl;
+          document.getElementById('logoPreview').style.display = 'block';
+          alert("✅ تم تحديث بيانات المطعم");
+        };
+        reader.readAsDataURL(logoImageData);
+      } else {
+        saveAllData();
+        alert("✅ تم تحديث بيانات المطعم");
+      }
+    }
 
-// ================= إدارة المنتجات =================
-function renderProducts(){
-  let html="";
-  products.forEach((p,i)=>{
-    html+=`<div class="item">
-      <span>${p.name} - ${p.price.toLocaleString()}</span>
-      ${p.note?`<div class="note">${p.note}</div>`:""} <!-- عرض الملاحظة -->
-      <img src="${p.image}">
-      <div>
-        <button onclick="editProduct(${i})">✏️</button>
-        <button onclick="deleteProduct(${i})">❌</button>
-      </div>
-    </div>`;
-  });
-  document.getElementById('productList').innerHTML=html;
-}
-function addProduct(){
-  let name=document.getElementById('name').value.trim();
-  let price=document.getElementById('price').value;
-  let category=document.getElementById('category').value;
-  let note=document.getElementById('note').value.trim(); // ملاحظة المنتج
-  let file=document.getElementById('imageFile').files[0];
-  if(!name || price==="" || isNaN(price) || !file){ alert("تحقق من البيانات"); return; }
+    function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        logoImageData = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('logoPreview').src = e.target.result;
+          document.getElementById('logoPreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-  let reader=new FileReader();
-  reader.onload=function(e){
-    products.push({
-      name:name,
-      price:parseInt(price),
-      category:category,
-      note:note,
-      image:e.target.result
-    });
-    saveData();
-    document.getElementById('name').value="";
-    document.getElementById('price').value="";
-    document.getElementById('note').value="";
-    document.getElementById('imageFile').value="";
-  };
-  reader.readAsDataURL(file);
-}
-function editProduct(i){
-  let newName=prompt("اسم",products[i].name);
-  let newPrice=prompt("سعر",products[i].price);
-  let newNote=prompt("ملاحظة", products[i].note);
-  if(newName && newPrice){ 
-    products[i].name=newName; 
-    products[i].price=parseInt(newPrice); 
-    products[i].note = newNote;
-    saveData(); 
-  }
-}
-function deleteProduct(i){
-  if(confirm("حذف؟")){ products.splice(i,1); saveData(); }
-}
+    // ==================== تبويب الأصناف ====================
+    function renderCategorySelect() {
+      const select = document.getElementById('category');
+      select.innerHTML = '<option value="">اختر التصنيف</option>';
+      categories.forEach(c => {
+        select.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+    }
 
-// ================= تشغيل =================
-loadData();
-</script>
+    function renderCategoryList() {
+      let html = '';
+      if (categories.length === 0) {
+        html = '<p style="text-align:center;color:var(--text-secondary);padding:20px;">لا توجد أصناف بعد</p>';
+      }
+      categories.forEach((c, i) => {
+        html += `
+          <div class="list-item">
+            <span style="font-weight:600;">📁 ${c}</span>
+            <div class="actions">
+              <button class="btn btn-ghost btn-xs" onclick="editCategory(${i})">✏️</button>
+              <button class="btn btn-danger btn-xs" onclick="deleteCategory(${i})">🗑️</button>
+            </div>
+          </div>`;
+      });
+      document.getElementById('categoryList').innerHTML = html;
+    }
+
+    function addCategory() {
+      const name = document.getElementById('catName').value.trim();
+      if (!name) { alert("⚠️ الرجاء إدخال اسم الصنف"); return; }
+      if (categories.includes(name)) { alert("⚠️ هذا الصنف موجود مسبقاً"); return; }
+      categories.push(name);
+      saveAllData();
+      document.getElementById('catName').value = '';
+    }
+
+    function editCategory(i) {
+      const newName = prompt("تعديل اسم الصنف:", categories[i]);
+      if (newName && newName.trim()) {
+        categories[i] = newName.trim();
+        saveAllData();
+      }
+    }
+
+    function deleteCategory(i) {
+      if (confirm(`هل أنت متأكد من حذف "${categories[i]}"؟`)) {
+        categories.splice(i, 1);
+        saveAllData();
+      }
+    }
+
+    // ==================== تبويب المنتجات ====================
+    function renderProducts() {
+      let html = '';
+      if (products.length === 0) {
+        html = '<p style="text-align:center;color:var(--text-secondary);padding:20px;">لا توجد منتجات بعد</p>';
+      }
+      products.forEach((p, i) => {
+        html += `
+          <div class="list-item">
+            <img src="${p.image}" alt="${p.name}">
+            <div class="info">
+              <div class="name">${p.name}</div>
+              <div class="detail">💰 ${p.price.toLocaleString()} د.ع | 📂 ${p.category} ${p.note ? '| 📝 ' + p.note : ''}</div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-ghost btn-xs" onclick="editProduct(${i})">✏️</button>
+              <button class="btn btn-danger btn-xs" onclick="deleteProduct(${i})">🗑️</button>
+            </div>
+          </div>`;
+      });
+      document.getElementById('productList').innerHTML = html;
+    }
+
+    function handleProductImagePreview(event) {
+      const file = event.target.files[0];
+      if (file) {
+        productImageData = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('productImagePreview').src = e.target.result;
+          document.getElementById('productImagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function addProduct() {
+      const name = document.getElementById('name').value.trim();
+      const price = document.getElementById('price').value;
+      const category = document.getElementById('category').value;
+      const note = document.getElementById('note').value.trim();
+
+      if (!name || price === '' || isNaN(price)) {
+        alert("⚠️ الرجاء إدخال اسم وسعر صحيح");
+        return;
+      }
+      if (!category) {
+        alert("⚠️ الرجاء اختيار تصنيف");
+        return;
+      }
+      if (!productImageData) {
+        alert("⚠️ الرجاء رفع صورة للمنتج");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        products.push({
+          name: name,
+          price: parseInt(price),
+          category: category,
+          note: note,
+          image: e.target.result
+        });
+        saveAllData();
+        
+        // تنظيف الحقول
+        document.getElementById('name').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('note').value = '';
+        document.getElementById('productImageInput').value = '';
+        document.getElementById('productImagePreview').style.display = 'none';
+        productImageData = null;
+      };
+      reader.readAsDataURL(productImageData);
+    }
+
+    function editProduct(i) {
+      const p = products[i];
+      const newName = prompt("اسم المنتج:", p.name);
+      if (newName === null) return;
+      const newPrice = prompt("السعر:", p.price);
+      if (newPrice === null) return;
+      const newNote = prompt("ملاحظة:", p.note || '');
+      if (newNote === null) return;
+
+      if (newName.trim() && newPrice.trim() && !isNaN(newPrice)) {
+        products[i].name = newName.trim();
+        products[i].price = parseInt(newPrice);
+        products[i].note = newNote.trim();
+        saveAllData();
+      } else {
+        alert("⚠️ بيانات غير صالحة");
+      }
+    }
+
+    function deleteProduct(i) {
+      if (confirm(`هل أنت متأكد من حذف "${products[i].name}"؟`)) {
+        products.splice(i, 1);
+        saveAllData();
+      }
+    }
+
+    // ==================== تبويب الثيم ====================
+    function loadThemeToForm() {
+      document.getElementById('themePrimary').value = theme.primary || '#007AFF';
+      document.getElementById('themeBg').value = theme.bg || '#F2F2F7';
+      document.getElementById('themeText').value = theme.text || '#1C1C1E';
+      document.getElementById('themeTextSecondary').value = theme.textSecondary || '#8E8E93';
+      document.getElementById('themeCardBg').value = theme.cardBg || '#FFFFFF';
+      updateColorPresetSelection();
+    }
+
+    function selectPreset(color) {
+      document.getElementById('themePrimary').value = color;
+      updateColorPresetSelection();
+    }
+
+    function updateColorPresetSelection() {
+      const currentColor = document.getElementById('themePrimary').value;
+      document.querySelectorAll('.color-preset').forEach(el => {
+        el.classList.toggle('active', el.dataset.color === currentColor);
+      });
+    }
+
+    function saveTheme() {
+      theme = {
+        primary: document.getElementById('themePrimary').value,
+        bg: document.getElementById('themeBg').value,
+        text: document.getElementById('themeText').value,
+        textSecondary: document.getElementById('themeTextSecondary').value,
+        cardBg: document.getElementById('themeCardBg').value,
+        navBg: document.getElementById('themeBg').value,
+        headerBg: document.getElementById('themeCardBg').value,
+      };
+      saveAllData();
+      alert("✅ تم حفظ الثيم بنجاح");
+    }
+
+    function resetTheme() {
+      theme = {
+        primary: '#007AFF',
+        bg: '#F2F2F7',
+        text: '#1C1C1E',
+        textSecondary: '#8E8E93',
+        cardBg: '#FFFFFF',
+        navBg: '#F2F2F7',
+        headerBg: '#FFFFFF',
+      };
+      saveAllData();
+      loadThemeToForm();
+      alert("🔄 تم استعادة الألوان الافتراضية");
+    }
+
+    // ==================== تبديل التبويبات ====================
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabName).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    // ==================== تشغيل ====================
+    loadData();
+  </script>
 </body>
 </html>
