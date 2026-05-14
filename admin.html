@@ -83,6 +83,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin: 0;
+      text-align: center;
     }
 
     .btn-icon {
@@ -278,7 +279,7 @@
       width: 100%;
       max-width: 450px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
     }
     .modal h3 {
@@ -312,7 +313,7 @@
     /* ==================== إشعار ==================== */
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: #1C1C1E;
@@ -324,6 +325,7 @@
       z-index: 300;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       animation: toastIn 0.3s ease;
+      white-space: nowrap;
     }
     @keyframes toastIn {
       from { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -380,7 +382,7 @@
     <!-- ========== تبويب البنرات ========== -->
     <div id="tab-banners" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title"><span class="icon-badge icon-orange">🎯</span> إضافة بنر</div>
+        <div class="card-title"><span class="icon-badge icon-orange">🎯</span> إضافة بنر جديد</div>
         <div class="input-group"><label>العنوان (اختياري)</label><input id="bannerTitle" placeholder="عنوان البنر"></div>
         <div class="input-group"><label>العنوان الفرعي (اختياري)</label><input id="bannerSubtitle" placeholder="نص فرعي"></div>
         <div class="input-group">
@@ -403,7 +405,7 @@
     <!-- ========== تبويب الأصناف ========== -->
     <div id="tab-categories" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title"><span class="icon-badge icon-green">➕</span> إضافة صنف</div>
+        <div class="card-title"><span class="icon-badge icon-green">➕</span> إضافة صنف جديد</div>
         <div class="input-group"><label>اسم الصنف</label><input id="catName" placeholder="مثال: مشروبات، وجبات..."></div>
         <button class="btn btn-primary" onclick="addCategory()">إضافة الصنف</button>
       </div>
@@ -416,11 +418,11 @@
     <!-- ========== تبويب المنتجات ========== -->
     <div id="tab-products" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title"><span class="icon-badge icon-orange">🍕</span> إضافة منتج</div>
+        <div class="card-title"><span class="icon-badge icon-orange">🍕</span> إضافة منتج جديد</div>
         <div class="input-group"><label>اسم المنتج</label><input id="name" placeholder="اسم المنتج"></div>
         <div class="input-group"><label>السعر (د.ع)</label><input id="price" type="number" placeholder="السعر"></div>
         <div class="input-group"><label>التصنيف</label><select id="category"></select></div>
-        <div class="input-group"><label>ملاحظات</label><textarea id="note" placeholder="ملاحظات إضافية..."></textarea></div>
+        <div class="input-group"><label>ملاحظات (اختياري)</label><textarea id="note" placeholder="ملاحظات إضافية..."></textarea></div>
         <div class="input-group">
           <label>صورة المنتج</label>
           <div class="upload-area" onclick="document.getElementById('productImageInput').click()">
@@ -470,7 +472,7 @@
 
   </div>
 
-  <!-- مودال التعديل (يتم حقنه ديناميكياً) -->
+  <!-- مودال التعديل -->
   <div id="modalContainer"></div>
 
   <!-- Firebase -->
@@ -492,7 +494,7 @@
     let restaurantName = "", logoUrl = "", theme = {};
     let productImageData = null, logoImageData = null, bannerImageData = null;
 
-    // ==================== إشعار ====================
+    // ==================== إشعار Toast ====================
     function showToast(msg) {
       const existing = document.querySelector('.toast');
       if (existing) existing.remove();
@@ -500,7 +502,7 @@
       toast.className = 'toast';
       toast.textContent = msg;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
+      setTimeout(() => toast.remove(), 2200);
     }
 
     // ==================== تحميل البيانات ====================
@@ -532,19 +534,17 @@
       }
     }
 
-    function saveAllData() {
+    function saveAllData(callback) {
       db.ref("menu").set({
-        categories: categories,
-        products: products,
-        banners: banners,
-        restaurantName: restaurantName,
-        logo: logoUrl,
-        theme: theme
+        categories, products, banners,
+        restaurantName, logo: logoUrl, theme
       }, (error) => {
         if (error) {
           showToast("❌ فشل الحفظ! تأكد من الاتصال");
         } else {
           showToast("✅ تم الحفظ بنجاح");
+          renderAll();
+          if (callback) callback();
         }
       });
     }
@@ -559,11 +559,12 @@
         const reader = new FileReader();
         reader.onload = function(e) {
           logoUrl = e.target.result;
-          saveAllData();
-          document.getElementById('logoPreview').src = logoUrl;
-          document.getElementById('logoPreview').style.display = 'block';
-          logoImageData = null;
-          document.getElementById('logoFileInput').value = '';
+          saveAllData(() => {
+            document.getElementById('logoPreview').src = logoUrl;
+            document.getElementById('logoPreview').style.display = 'block';
+            logoImageData = null;
+            document.getElementById('logoFileInput').value = '';
+          });
         };
         reader.readAsDataURL(logoImageData);
       } else {
@@ -606,12 +607,13 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         banners.push({ image: e.target.result, title, subtitle });
-        saveAllData();
-        document.getElementById('bannerTitle').value = '';
-        document.getElementById('bannerSubtitle').value = '';
-        document.getElementById('bannerImageInput').value = '';
-        document.getElementById('bannerImagePreview').style.display = 'none';
-        bannerImageData = null;
+        saveAllData(() => {
+          document.getElementById('bannerTitle').value = '';
+          document.getElementById('bannerSubtitle').value = '';
+          document.getElementById('bannerImageInput').value = '';
+          document.getElementById('bannerImagePreview').style.display = 'none';
+          bannerImageData = null;
+        });
       };
       reader.readAsDataURL(bannerImageData);
     }
@@ -640,7 +642,7 @@
 
     function editBanner(i) {
       const b = banners[i];
-      const modalHTML = `
+      document.getElementById('modalContainer').innerHTML = `
         <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
           <div class="modal">
             <h3>✏️ تعديل البنر</h3>
@@ -650,7 +652,6 @@
             <button class="btn btn-ghost" style="width:100%;margin-top:6px;" onclick="closeModal()">إلغاء</button>
           </div>
         </div>`;
-      document.getElementById('modalContainer').innerHTML = modalHTML;
     }
 
     function saveEditBanner(i) {
@@ -697,12 +698,13 @@
       if (!name) { showToast("⚠️ أدخل اسم الصنف"); return; }
       if (categories.includes(name)) { showToast("⚠️ موجود مسبقاً"); return; }
       categories.push(name);
-      saveAllData();
-      document.getElementById('catName').value = '';
+      saveAllData(() => {
+        document.getElementById('catName').value = '';
+      });
     }
 
     function editCategory(i) {
-      const modalHTML = `
+      document.getElementById('modalContainer').innerHTML = `
         <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
           <div class="modal">
             <h3>✏️ تعديل الصنف</h3>
@@ -711,13 +713,11 @@
             <button class="btn btn-ghost" style="width:100%;margin-top:6px;" onclick="closeModal()">إلغاء</button>
           </div>
         </div>`;
-      document.getElementById('modalContainer').innerHTML = modalHTML;
     }
 
     function saveEditCategory(i) {
       const newName = document.getElementById('editCatName').value.trim();
       if (newName) {
-        // تحديث المنتجات المرتبطة
         const oldName = categories[i];
         products.forEach(p => { if (p.category === oldName) p.category = newName; });
         categories[i] = newName;
@@ -782,20 +782,21 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         products.push({ name, price: parseInt(price), category, note, image: e.target.result });
-        saveAllData();
-        document.getElementById('name').value = '';
-        document.getElementById('price').value = '';
-        document.getElementById('note').value = '';
-        document.getElementById('productImageInput').value = '';
-        document.getElementById('productImagePreview').style.display = 'none';
-        productImageData = null;
+        saveAllData(() => {
+          document.getElementById('name').value = '';
+          document.getElementById('price').value = '';
+          document.getElementById('note').value = '';
+          document.getElementById('productImageInput').value = '';
+          document.getElementById('productImagePreview').style.display = 'none';
+          productImageData = null;
+        });
       };
       reader.readAsDataURL(productImageData);
     }
 
     function editProduct(i) {
       const p = products[i];
-      const modalHTML = `
+      document.getElementById('modalContainer').innerHTML = `
         <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
           <div class="modal">
             <h3>✏️ تعديل المنتج</h3>
@@ -807,7 +808,6 @@
             <button class="btn btn-ghost" style="width:100%;margin-top:6px;" onclick="closeModal()">إلغاء</button>
           </div>
         </div>`;
-      document.getElementById('modalContainer').innerHTML = modalHTML;
     }
 
     function saveEditProduct(i) {
@@ -878,8 +878,9 @@
         textSecondary: '#8E8E93', cardBg: '#FFFFFF',
         navBg: '#F2F2F7', headerBg: '#FFFFFF',
       };
-      saveAllData();
-      loadThemeToForm();
+      saveAllData(() => {
+        loadThemeToForm();
+      });
     }
 
     // ==================== التبويبات ====================
